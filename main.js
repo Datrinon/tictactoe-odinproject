@@ -17,11 +17,36 @@ Functionalities:
 //Note: Change this to a factory function since we need multiple (to be placed into array).
 //Using 
 const gameboardTile = () => {
-  let createTile = () => {
+
+  const _xMark = _initializeMark("X");
+  const _oMark = _initializeMark("O");
+  let _played; 
+
+  function _initializeMark(markType="O") {
+    let mark = document.createElement("i");
+    mark.classList.add("mark")
+    if(markType === "O") {
+      mark.classList.add("far","fa-circle");
+    } else {
+      mark.classList.add("fas","fa-times");
+    }
+    
+    return mark;
+  }
+
+  const createTile = () => {
     let tile = document.createElement("div");
     tile.classList.add("game-tile");
 
+    tile.addEventListener("click", _markTile);
+
     return tile;
+  }
+
+  const _markTile = (e) => {
+    // DEBUG
+    // Just test the xMark.
+    e.currentTarget.appendChild(_xMark);
   }
 
   return {

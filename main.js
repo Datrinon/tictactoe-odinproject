@@ -13,15 +13,33 @@ Functionalities:
 - Dumb AI function and vs player.
 */
 
+//Function factory for the tiles. Initializes event listeners and such.
+//Note: Change this to a factory function since we need multiple (to be placed into array).
+//Using 
+const gameboardTile = () => {
+  let createTile = () => {
+    let tile = document.createElement("div");
+    tile.classList.add("game-tile");
+
+    return tile;
+  }
+
+  return {
+    createTile,
+  }
+};
+
+
 // Generate a view of the gameboard. Don't use global code.
 // Use a module to display the gameboard.
 // and try to not use main() this time.
 const gameboard = (function() {
   
   let _size = 3;
+  let _gameboardState = [];
 
   /**
-   * Generates a view of the gameboard.
+   * Generates a view of the gameboard (default size: 3x3).
    * @param {Element} container - DOM parent node to place the gameboard underneath.
    */
   const displayGameboardView = (container) => {
@@ -31,29 +49,36 @@ const gameboard = (function() {
     gameboard.style.gridTemplateColumns = `repeat(${_size}, 1fr)`;
     gameboard.style.gridTemplateRows = `repeat(${_size}, 1fr)`;
 
-    let tile = document.createElement("div");
-    tile.classList.add("game-tile");
-    tile.textContent = "Tile";
-
+    
     for (let i = 0; i < (_size * _size); i++) {      
-      gameboard.appendChild(tile.cloneNode(true));
+      // use differential inheritance to preserve memory rather than copying methods.
+      let tile = gameboardTile();
+      _gameboardState.push(tile);
+      
+      gameboard.appendChild(tile.createTile());
+
     }
 
     container.appendChild(gameboard);
   };
 
-  let setSize = (size) => {
+  const setSize = (size) => {
     _size = size;
   };
 
-  let getSize = () => {
+  const getSize = () => {
     return _size;
+  };
+
+  const getGameboardState = () => {
+    return _gameboardState;
   };
 
   return {
     displayGameboardView,
     setSize,
     getSize,
+    getGameboardState,
   }
 })();
 

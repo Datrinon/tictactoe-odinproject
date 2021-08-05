@@ -14,7 +14,7 @@
       <section id="game">
         <!-- tictactoe gameboard here -->
       </section>
-      <section id="controls">
+      <section id="menu">
         <div id="dialog">
           <p>Choose your mark.</p>
         </div>
@@ -23,13 +23,14 @@
             <button>X</button>
             <button>O</button>
             <label>Number of Rounds
-              <input id="num-rounds-input" type="number" value="1" min="1" max="5"/>
+              <input id="num-rounds-input" type="number"
+                  value="1" min="1" max="5"/>
             </label>
             <label>Grid Size
-              <input id="grid-size-input" type="number" value="3" min="3" max="6"/>
+              <input id="grid-size-input" type="number" value="3" min="3" max="5"/>
             </label>
           </div>
-          <button id="options-confirm">Play!</button>
+          <button id="options-confirm" disabled>Play!</button>
         </div>
       </section>
     </main>

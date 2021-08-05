@@ -16,9 +16,11 @@ Functionalities:
 //Function factory for the tiles. Initializes event listeners and such.
 //Note: Change this to a factory function since we need multiple (to be placed into array).
 //Using 
-const player = (name, markType, isCPU) => {
-  name = name ?? "new";
-  mark = _initializeMark(markType);
+
+
+
+const player = (markType, isCPU = false) => {
+  let mark = _initializeMark(markType);
 
   function _initializeMark(markType="O") {
     let mark = document.createElement("i");
@@ -33,7 +35,6 @@ const player = (name, markType, isCPU) => {
   }
 
   return {
-    name,
     mark,
     isCPU
   }
@@ -41,7 +42,7 @@ const player = (name, markType, isCPU) => {
 
 const gameboardTile = () => {
 
-  let played; 
+  let cellFilled; 
 
   const createTile = () => {
     let tile = document.createElement("div");
@@ -53,9 +54,10 @@ const gameboardTile = () => {
   }
 
   const _markTile = (e) => {
-    // DEBUG
-    // Just test the xMark.
-    e.currentTarget.appendChild(_xMark);
+    if (player1turn) {
+      e.currentTarget.appendChild();
+      gameboard.gameboardState 
+    }
   }
 
   return {
@@ -71,11 +73,23 @@ const gameboard = (function() {
   let size = 3;
   let gameboardState = [];
 
+  const regenerateGameboard = (e) => {
+    while (Views.gameView.firstChild) {
+      Views.gameView.removeChild(Views.gameView.firstChild);
+    }
+
+    size = e.currentTarget.value;
+    gameboardState = [];
+
+    displayGameboardView(Views.gameView);
+  };
+
   /**
    * Generates a view of the gameboard (default size: 3x3).
    * @param {Element} container - DOM parent node to place the gameboard underneath.
    */
   const displayGameboardView = (container) => {
+
     let gameboard = document.createElement("div");
     
     gameboard.id = "gameboard";
@@ -86,7 +100,7 @@ const gameboard = (function() {
       // use differential inheritance to preserve memory rather than copying methods.
       let tile = gameboardTile();
       gameboardState.push(tile);
-      
+
       gameboard.appendChild(tile.createTile());
 
     }
@@ -96,25 +110,39 @@ const gameboard = (function() {
 
   return {
     displayGameboardView,
+    regenerateGameboard,
     size,
     gameboardState
   }
 })();
 
 const options = (function(){
-  
 
   const _markActive = (e) => {
+    document.querySelector("#options-confirm").removeAttribute("disabled");
+
     e.currentTarget.parentNode.querySelectorAll("button").forEach(button => {
       button.classList.remove("selection-active");
     })
     e.currentTarget.classList.add("selection-active");
   }
 
+  /**
+   * Initializes various views with handlers to respond to user interaction.
+   */
   const _initializeHandlers = () => {
     document.querySelectorAll("#options-choices > button").forEach(button => {
       button.addEventListener("click", _markActive);
-    })       
+    });
+
+    document.querySelector("#options-confirm").addEventListener("click", (e) => {
+      document.querySelector("#menu").classList.add("disable-visibility");
+      game.startGame();
+    });
+
+    document.querySelector("#grid-size-input").addEventListener("change",
+        gameboard.regenerateGameboard);
+
   }
 
   const initialize = () => {
@@ -124,7 +152,44 @@ const options = (function(){
   return {initialize};
 })();
 
-// main section
-gameboard.displayGameboardView(document.querySelector("#game"));
+const game = (function(){
+  // main section
+  let player1;
+  let player2;
+  let rounds;
+  let player1turn = true;
+
+  /**
+   * Starts the game by:
+   * - Creating players
+   * - Setting the rounds
+   */
+  const startGame = (e) => {    
+
+    let chosenMark = document.querySelector("#options-choices > .selection-active").textContent;
+    let otherMark = document.querySelector("#options-choices > button:not(.selection-active)").textContent;
+
+    player1 = player(chosenMark, false);
+    player2 = player(otherMark, true);
+    rounds = document.querySelector("#grid-size-input").value
+
+    // console.log(JSON.stringify(player1));
+    // console.log(JSON.stringify(player2));
+  }
+
+  return {
+    startGame,
+    player1turn,
+    player1,
+    player2,
+  }
+})();
+
+const Views = {
+  gameView : document.querySelector("#game"),
+}
+
+
+gameboard.displayGameboardView(Views.gameView);
 options.initialize();
 

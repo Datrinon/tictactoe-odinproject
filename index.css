@@ -56,3 +56,7 @@ body {
 .selection-active {
   border: 1px solid red;
 }
+
+.disable-visibility {
+  visibility: hidden;
+}

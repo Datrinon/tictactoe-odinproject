@@ -35,6 +35,7 @@ const player = (markType, isCPU = false) => {
   }
 
   return {
+    markType,
     mark,
     isCPU
   }
@@ -48,16 +49,30 @@ const gameboardTile = () => {
     let tile = document.createElement("div");
     tile.classList.add("game-tile");
 
-    tile.addEventListener("click", _markTile);
+    tile.addEventListener("click", (e) => {
+      _markTile(e);
+      if(game.player2.isCPU) {
+        _markTile(e, true);
+    });
 
     return tile;
   }
 
-  const _markTile = (e) => {
-    if (player1turn) {
-      e.currentTarget.appendChild();
-      gameboard.gameboardState 
+  const _markTile = (e, cpuPlaying = false) => {
+    let tile = e.currentTarget;
+    let markGraphic;
+    let markText;
+    if (game.player1turn) {
+      markGraphic = game.player1.mark;
+      markText = game.player1.markType;
+    } else {
+      markGraphic = game.player2.mark;
+      markText = game.player2.markType;
     }
+
+    tile.appendChild(markGraphic);
+    gameboard.gameboardState[tile.id] = markText;
+    game.player1turn = !game.player1turn;
   }
 
   return {
@@ -98,10 +113,12 @@ const gameboard = (function() {
     
     for (let i = 0; i < (size * size); i++) {      
       // use differential inheritance to preserve memory rather than copying methods.
-      let tile = gameboardTile();
-      gameboardState.push(tile);
+      let tile = gameboardTile().createTile();
+      tile.id = i;
 
-      gameboard.appendChild(tile.createTile());
+      gameboardState.push("-");
+
+      gameboard.appendChild(tile);
 
     }
 
@@ -169,19 +186,23 @@ const game = (function(){
     let chosenMark = document.querySelector("#options-choices > .selection-active").textContent;
     let otherMark = document.querySelector("#options-choices > button:not(.selection-active)").textContent;
 
-    player1 = player(chosenMark, false);
-    player2 = player(otherMark, true);
-    rounds = document.querySelector("#grid-size-input").value
+    game.player1 = player(chosenMark, false);
+    game.player2 = player(otherMark, true);
+    game.rounds = document.querySelector("#grid-size-input").value
 
-    // console.log(JSON.stringify(player1));
-    // console.log(JSON.stringify(player2));
   }
+
+  const performCPUMove = (e) => {
+    // select a random number. Use reduce to find out the available spaces.
+    // 
+  };
 
   return {
     startGame,
     player1turn,
     player1,
     player2,
+    rounds
   }
 })();
 

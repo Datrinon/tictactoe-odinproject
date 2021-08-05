@@ -9,12 +9,28 @@
   <body>
     <main class="content">
       <header>
-        <h1>Tic-Tac-Toe Game!</h1>
+        <h1>Tic-Tac-Toe</h1>
       </header>
-      <section id="menu">
-      </section>
       <section id="game">
         <!-- tictactoe gameboard here -->
+      </section>
+      <section id="controls">
+        <div id="dialog">
+          <p>Choose your mark.</p>
+        </div>
+        <div id="options">
+          <div id="options-choices">
+            <button>X</button>
+            <button>O</button>
+            <label>Number of Rounds
+              <input id="num-rounds-input" type="number" value="1" min="1" max="5"/>
+            </label>
+            <label>Grid Size
+              <input id="grid-size-input" type="number" value="3" min="3" max="6"/>
+            </label>
+          </div>
+          <button id="options-confirm">Play!</button>
+        </div>
       </section>
     </main>
     <footer>

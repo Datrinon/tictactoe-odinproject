@@ -16,11 +16,9 @@ Functionalities:
 //Function factory for the tiles. Initializes event listeners and such.
 //Note: Change this to a factory function since we need multiple (to be placed into array).
 //Using 
-const gameboardTile = () => {
-
-  const _xMark = _initializeMark("X");
-  const _oMark = _initializeMark("O");
-  let _played; 
+const player = (name, markType, isCPU) => {
+  name = name ?? "new";
+  mark = _initializeMark(markType);
 
   function _initializeMark(markType="O") {
     let mark = document.createElement("i");
@@ -33,6 +31,17 @@ const gameboardTile = () => {
     
     return mark;
   }
+
+  return {
+    name,
+    mark,
+    isCPU
+  }
+}
+
+const gameboardTile = () => {
+
+  let played; 
 
   const createTile = () => {
     let tile = document.createElement("div");
@@ -54,14 +63,13 @@ const gameboardTile = () => {
   }
 };
 
-
 // Generate a view of the gameboard. Don't use global code.
 // Use a module to display the gameboard.
 // and try to not use main() this time.
 const gameboard = (function() {
   
-  let _size = 3;
-  let _gameboardState = [];
+  let size = 3;
+  let gameboardState = [];
 
   /**
    * Generates a view of the gameboard (default size: 3x3).
@@ -71,14 +79,13 @@ const gameboard = (function() {
     let gameboard = document.createElement("div");
     
     gameboard.id = "gameboard";
-    gameboard.style.gridTemplateColumns = `repeat(${_size}, 1fr)`;
-    gameboard.style.gridTemplateRows = `repeat(${_size}, 1fr)`;
-
+    gameboard.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
+    gameboard.style.gridTemplateRows = `repeat(${size}, 1fr)`;
     
-    for (let i = 0; i < (_size * _size); i++) {      
+    for (let i = 0; i < (size * size); i++) {      
       // use differential inheritance to preserve memory rather than copying methods.
       let tile = gameboardTile();
-      _gameboardState.push(tile);
+      gameboardState.push(tile);
       
       gameboard.appendChild(tile.createTile());
 
@@ -87,26 +94,37 @@ const gameboard = (function() {
     container.appendChild(gameboard);
   };
 
-  const setSize = (size) => {
-    _size = size;
-  };
-
-  const getSize = () => {
-    return _size;
-  };
-
-  const getGameboardState = () => {
-    return _gameboardState;
-  };
-
   return {
     displayGameboardView,
-    setSize,
-    getSize,
-    getGameboardState,
+    size,
+    gameboardState
   }
+})();
+
+const options = (function(){
+  
+
+  const _markActive = (e) => {
+    e.currentTarget.parentNode.querySelectorAll("button").forEach(button => {
+      button.classList.remove("selection-active");
+    })
+    e.currentTarget.classList.add("selection-active");
+  }
+
+  const _initializeHandlers = () => {
+    document.querySelectorAll("#options-choices > button").forEach(button => {
+      button.addEventListener("click", _markActive);
+    })       
+  }
+
+  const initialize = () => {
+    _initializeHandlers();
+  }
+
+  return {initialize};
 })();
 
 // main section
 gameboard.displayGameboardView(document.querySelector("#game"));
+options.initialize();
 

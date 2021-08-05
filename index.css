@@ -48,3 +48,11 @@ body {
   font-size: 5em;
   vertical-align: text-top;
 }
+
+#controls {
+  text-align: center;
+}
+
+.selection-active {
+  border: 1px solid red;
+}

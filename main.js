@@ -43,36 +43,51 @@ const player = (markType, isCPU = false) => {
 
 const gameboardTile = () => {
 
-  let cellFilled; 
+  let cellFilled; //! TODO: You need to use cellFilled to prevent addEventListener.
 
   const createTile = () => {
     let tile = document.createElement("div");
     tile.classList.add("game-tile");
 
     tile.addEventListener("click", (e) => {
-      _markTile(e);
+      if (!game.cpuPlaying) {
+        _markTile(e);
+      }
+      // cpu response?
       if(game.player2.isCPU) {
-        _markTile(e, true);
+        game.cpuPlaying = true;
+        setTimeout(() => _markTile(null, true), 1300);
+      }
     });
 
     return tile;
   }
 
-  const _markTile = (e, cpuPlaying = false) => {
-    let tile = e.currentTarget;
+  const _markTile = (event = null, cpuMove = false) => {
+    let tile;
     let markGraphic;
     let markText;
+
+    if (!cpuMove) {
+      tile = event.currentTarget;
+    } else {
+      let id = game.performCPUMove();
+      tile = Views.gameView.querySelector(`.game-tile[data-index="${id}"]`);
+    }
+
     if (game.player1turn) {
-      markGraphic = game.player1.mark;
+      markGraphic = game.player1.mark.cloneNode();
       markText = game.player1.markType;
     } else {
-      markGraphic = game.player2.mark;
+      markGraphic = game.player2.mark.cloneNode();
       markText = game.player2.markType;
     }
 
     tile.appendChild(markGraphic);
     gameboard.gameboardState[tile.id] = markText;
     game.player1turn = !game.player1turn;
+
+    game.cpuPlaying = false;
   }
 
   return {
@@ -114,7 +129,7 @@ const gameboard = (function() {
     for (let i = 0; i < (size * size); i++) {      
       // use differential inheritance to preserve memory rather than copying methods.
       let tile = gameboardTile().createTile();
-      tile.id = i;
+      tile.setAttribute("data-index", i); 
 
       gameboardState.push("-");
 
@@ -175,6 +190,7 @@ const game = (function(){
   let player2;
   let rounds;
   let player1turn = true;
+  let cpuPlaying = false;
 
   /**
    * Starts the game by:
@@ -188,13 +204,28 @@ const game = (function(){
 
     game.player1 = player(chosenMark, false);
     game.player2 = player(otherMark, true);
-    game.rounds = document.querySelector("#grid-size-input").value
+    game.rounds = document.querySelector("#grid-size-input").value;
 
+    dialogController.
   }
 
-  const performCPUMove = (e) => {
+  /**
+   * Performs a CPU move by returning their decision as a number corresponding
+   * to an available space on the grid.
+   * 
+   * @returns 
+   */
+  const performCPUMove = () => {
     // select a random number. Use reduce to find out the available spaces.
-    // 
+    let availableSpaces = gameboard.gameboardState.reduce((available, elem, index) => {
+      if (elem === "-") {
+        available.push(index);
+      }
+      return available;
+    }, []);
+    let move = Math.round(Math.random() * availableSpaces.length-1);
+
+    return availableSpaces[move];
   };
 
   return {
@@ -202,9 +233,30 @@ const game = (function(){
     player1turn,
     player1,
     player2,
-    rounds
+    rounds,
+    performCPUMove
   }
 })();
+
+const dialogController = (() => {
+  
+  function sendMessage(msg){
+    document.querySelector("#dialog").textContent = msg;
+  }
+
+  return {
+    sendMessage,
+    responsePresets,
+  }
+})();
+
+const responsePresets = {
+  menu: "Choose a mark and press play!",
+  win: "Player 1 wins!",
+  lose: "Player 2 wins!",
+  p1move: "Player 1's move",
+  p2move: "Player 2's move",
+}
 
 const Views = {
   gameView : document.querySelector("#game"),

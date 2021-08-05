@@ -60,3 +60,7 @@ body {
 .disable-visibility {
   visibility: hidden;
 }
+
+.game-tile[data-index=3]{
+
+}

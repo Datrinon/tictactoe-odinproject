@@ -55,8 +55,9 @@ const gameboardTile = () => {
       }
       // cpu response?
       if(game.player2.isCPU) {
+        dialogController.sendMessage(responsePresets.p2move);
         game.cpuPlaying = true;
-        setTimeout(() => _markTile(null, true), 1300);
+        setTimeout(() => _markTile(null, true), 10);
       }
     });
 
@@ -72,6 +73,7 @@ const gameboardTile = () => {
       tile = event.currentTarget;
     } else {
       let id = game.performCPUMove();
+      console.log(id);
       tile = Views.gameView.querySelector(`.game-tile[data-index="${id}"]`);
     }
 
@@ -84,10 +86,14 @@ const gameboardTile = () => {
     }
 
     tile.appendChild(markGraphic);
-    gameboard.gameboardState[tile.id] = markText;
+    gameboard.gameboardState[tile.getAttribute("data-index")] = markText;
     game.player1turn = !game.player1turn;
 
     game.cpuPlaying = false;
+
+    if (cpuMove){
+      dialogController.sendMessage(responsePresets.p1move);
+    }
   }
 
   return {
@@ -206,7 +212,7 @@ const game = (function(){
     game.player2 = player(otherMark, true);
     game.rounds = document.querySelector("#grid-size-input").value;
 
-    dialogController.
+    dialogController.sendMessage(responsePresets.p1move);
   }
 
   /**
@@ -246,7 +252,6 @@ const dialogController = (() => {
 
   return {
     sendMessage,
-    responsePresets,
   }
 })();
 

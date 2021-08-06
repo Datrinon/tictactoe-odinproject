@@ -43,36 +43,44 @@ const player = (markType, isCPU = false) => {
 
 const gameboardTile = () => {
 
-  let cellFilled; //! TODO: You need to use cellFilled to prevent addEventListener.
-
   const createTile = () => {
     let tile = document.createElement("div");
     tile.classList.add("game-tile");
 
-    tile.addEventListener("click", (e) => {
-      if (!game.cpuPlaying) {
-        _markTile(e);
-      }
-      // cpu response?
-      if(game.player2.isCPU) {
-        dialogController.sendMessage(responsePresets.p2move);
-        game.cpuPlaying = true;
-        setTimeout(() => _markTile(null, true), 10);
-      }
-    });
+    tile.addEventListener("click", _onTileClick);
 
     return tile;
   }
+
+  const _onTileClick = (e) => {
+    let id = e.currentTarget.getAttribute("data-index");
+    if (gameboard.gameboardState[id] !== "-") {
+      dialogController.sendMessage(responsePresets.played);
+      return;
+    }
+
+    if (!game.cpuPlaying) {
+      _markTile(e);
+    }
+    // cpu response?
+    if(game.player2.isCPU) {
+      dialogController.sendMessage(responsePresets.p2move);
+      game.cpuPlaying = true;
+      setTimeout(() => _markTile(null, true), 10);
+    }
+  };
 
   const _markTile = (event = null, cpuMove = false) => {
     let tile;
     let markGraphic;
     let markText;
+    let id;
 
     if (!cpuMove) {
       tile = event.currentTarget;
+      id = event.currentTarget.getAttribute("data-index");
     } else {
-      let id = game.performCPUMove();
+      id = game.performCPUMove();
       console.log(id);
       tile = Views.gameView.querySelector(`.game-tile[data-index="${id}"]`);
     }
@@ -261,6 +269,7 @@ const responsePresets = {
   lose: "Player 2 wins!",
   p1move: "Player 1's move",
   p2move: "Player 2's move",
+  played: "This square has already been marked! Pick another."
 }
 
 const Views = {

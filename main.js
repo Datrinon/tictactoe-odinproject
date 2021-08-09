@@ -118,23 +118,65 @@ const gameboard = (function() {
   
   let size = 3;
   let gameboardState = [];
+  let winningRows = [];
+  let winningColumns = [];
+  let winningDiagonals = [];
 
-  const regenerateGameboard = (e) => {
+  const _determineWinStates = () => {
+    let self = gameboard;
+
+    self.winningRows = [];
+    self.winningColumns = [];
+    self.winningDiagonals = []; 
+    
+    for (let i = 0; i < size*size; i+=size) {
+      let row = [];
+      for (let j=i; j < i + size; j++) {
+        row.push(j);
+      }
+      self.winningRows.push(row);
+    }
+
+    for (let i = 0; i < size; i++) {
+      let column = [];
+      for (let j = i; j < (size * size); j += size) {
+        column.push(j);
+      }
+      self.winningColumns.push(column);
+    }
+
+    let diag = [];
+    for (let i = 0; i < size*size; i+= size+1) {
+      diag.push(i);
+    }
+
+    let crossdiag = [];
+    for (let i = size-1; i <= (size * size) - size ; i += size-1) {
+      crossdiag.push(i);
+    }
+    self.winningDiagonals.push(diag, crossdiag);
+  }
+
+  const generateGameboard = (e = null) => {
     while (Views.gameView.firstChild) {
       Views.gameView.removeChild(Views.gameView.firstChild);
     }
+    if (e !== null) {
+      size = e.currentTarget.value;
+    }
 
-    size = e.currentTarget.value;
     gameboardState = [];
 
-    displayGameboardView(Views.gameView);
+    _determineWinStates();
+
+    _displayGameboardView(Views.gameView);
   };
 
   /**
    * Generates a view of the gameboard (default size: 3x3).
    * @param {Element} container - DOM parent node to place the gameboard underneath.
    */
-  const displayGameboardView = (container) => {
+  const _displayGameboardView = (container) => {
 
     let gameboard = document.createElement("div");
     
@@ -157,10 +199,12 @@ const gameboard = (function() {
   };
 
   return {
-    displayGameboardView,
-    regenerateGameboard,
+    generateGameboard,
     size,
-    gameboardState
+    gameboardState,
+    winningRows,
+    winningColumns,
+    winningDiagonals
   }
 })();
 
@@ -189,7 +233,7 @@ const options = (function(){
     });
 
     document.querySelector("#grid-size-input").addEventListener("change",
-        gameboard.regenerateGameboard);
+        gameboard.generateGameboard);
 
   }
 
@@ -315,16 +359,12 @@ const game = (function(){
               break;
             }
           }
-        }
-
-
-
-        
+        }        
       }
     }
 
     // return horizontalWin | verticalWin | diagonalWin;
-  // }
+  }
 
   return {
     startGame,
@@ -364,6 +404,6 @@ const Views = {
 }
 
 
-gameboard.displayGameboardView(Views.gameView);
+gameboard.generateGameboard();
 options.initialize();
 

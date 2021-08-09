@@ -162,7 +162,7 @@ const gameboard = (function() {
       Views.gameView.removeChild(Views.gameView.firstChild);
     }
     if (e !== null) {
-      size = e.currentTarget.value;
+      size = +e.currentTarget.value;
     }
 
     gameboardState = [];

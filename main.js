@@ -102,6 +102,8 @@ const gameboardTile = () => {
     if (cpuMove){
       dialogController.sendMessage(responsePresets.p1move);
     }
+
+    game.checkIfWin();
   }
 
   return {
@@ -242,15 +244,99 @@ const game = (function(){
     return availableSpaces[move];
   };
 
+  /**
+   * Checks if the game has been won. Call this function after a move has been 
+   * played.
+   */
+  const checkIfWin = () => {
+    let horizontalWin;
+    let verticalWin;
+    let diagonalWin;
+
+    // extract an array of indices for both x and o.
+    let markIndices = gameboard.gameboardState.reduce((indices, elem, index) => {
+      if(elem === "X") {
+        indices.x.push(index);
+      } else if (elem === "O") {
+        indices.o.push(index);
+      }
+
+      return indices;
+    }, {x: [], o: []});
+
+    console.log(JSON.stringify(markIndices));
+
+    // TODO: logic that checks if you've won.
+    // 1. Is the length of the array at least 4 elements? 
+    // If it's not, not enough moves have been made to grant a winner.
+    if (indices.x.length < 4 && indices.o.length < 4) {
+      return false;
+    }
+    // 2. check all wins based on the given move.
+    // build a diagonal win state index array outside of loop
+    // check first if diagonal's even possible.
+    // example. 7
+    let diagWinState = [];
+    let crossDiagWinState = [];
+    for (let i = 0; i < gameboard.size; i++) {
+      diagWinState.push(i + (gameboard.size * i));
+      crossDiagWinState.push((gameboard.size * (i+1)) - (i+1))
+    }
+
+    for (let markType in markIndices) {
+      let row;
+      let column;
+      let matches;
+      for (let index of markIndices[markType]){
+        // for a given index
+        // build a horizontal win state index array
+        row = ~~(index / gameboard.size);
+        matches = 0;
+        for (let i = 0; i < gameboard.size; i++) {
+          if (markIndices[markType].indexOf((row * gameboard.size) + i) !== -1) {
+            matches++;
+            if (matches === gameboard.size){
+              console.log("horizontal win attained");
+              horizontalWin = true;
+              break;
+            }
+          }
+        }
+
+        column = index % gameboard.size;
+        matches = 0;
+        // build a vertical win state index array
+        for (let i = 0; i < gameboard.size; i++) {
+          if (markIndices[markType].indexOf(column + (column * gameboard.size) !== -1)) {
+            matches++;
+            if (matches === gameboard.size){
+              console.log("vertical win attained");
+              verticalWin = true;
+              break;
+            }
+          }
+        }
+
+
+
+        
+      }
+    }
+
+    // return horizontalWin | verticalWin | diagonalWin;
+  // }
+
   return {
     startGame,
     player1turn,
     player1,
     player2,
     rounds,
-    performCPUMove
+    performCPUMove,
+    checkIfWin,
   }
 })();
+
 
 const dialogController = (() => {
   
@@ -262,6 +348,7 @@ const dialogController = (() => {
     sendMessage,
   }
 })();
+
 
 const responsePresets = {
   menu: "Choose a mark and press play!",

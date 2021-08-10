@@ -88,9 +88,10 @@ const gameboardTile = () => {
       dialogController.sendMessage(responsePresets.p1move);
     }
 
-    if (game.checkIfWin()) {
+    if (game.checkIfWin() || game.checkIfAllSpacesFilled()) {
       game.endRound();
     }
+    
   }
 
   return {
@@ -311,7 +312,7 @@ const game = (function(){
     for (let markType in markIndices) {
       for (let index of markIndices[markType]) {
 
-        // 1. Is the length of the given array less than {gameboard.size} elements? 
+        // Is the length of the given array less than {gameboard.size} elements? 
         if (markIndices[markType].length < gameboard.size) {
           continue;
         }
@@ -346,7 +347,7 @@ const game = (function(){
 
         for (let diagonalType of gameboard.winningDiagonals) {
           let diagonalMatches = 0;
-          console.log(diagonalType);
+          // console.log(diagonalType);
           for(let diagonalIndex of diagonalType) {
             if (markIndices[markType].indexOf(diagonalIndex) !== -1) {
               diagonalMatches++;
@@ -374,6 +375,13 @@ const game = (function(){
     }
 
     return horizontalWin | verticalWin | diagonalWin;
+  }
+
+  const checkIfAllSpacesFilled = () => {
+    if (!gameboard.gameboardState.includes("-")) {
+      dialogController.sendMessage(responsePresets.tie);
+      game.endRound();
+    }
   }
 
   const endRound = () => {
@@ -414,7 +422,8 @@ const game = (function(){
     winner,
     endRound,
     roundOver,
-    startNewRound
+    startNewRound,
+    checkIfAllSpacesFilled,
   }
 })();
 
@@ -437,7 +446,8 @@ const responsePresets = {
   lose: "Player 2 wins!",
   p1move: "Player 1's move",
   p2move: "Player 2's move",
-  played: "This square has already been marked! Pick another."
+  played: "This square has already been marked! Pick another.",
+  tie: "It's a tie! Nobody wins.",
 }
 
 const Views = {

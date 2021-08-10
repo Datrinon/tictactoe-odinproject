@@ -263,6 +263,14 @@ const game = (function(){
     game.rounds = +document.querySelector("#grid-size-input").value;
     
     scoreboardController.initialize(game.player1, game.player2);
+    
+    // after the user begins a game, do not remove visibility.
+    // in case the user wants to play again.
+    for (let view in Views) {
+      if (Views[view].classList.contains("disable-display")){
+        Views[view].classList.remove("disable-display");
+      }
+    }
 
     startNewRound();
   }
@@ -494,6 +502,7 @@ const responsePresets = {
 
 const Views = {
   gameView : document.querySelector("#game"),
+  scoreboardView : document.querySelector("#scoreboard"),
 }
 
 

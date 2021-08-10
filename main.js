@@ -1,23 +1,4 @@
 'use strict'
-/*
-Goals based on the factory function section:
-- Your main goal here is to have as little global code as possible.
-Try tucking everything away inside of a module or factory.
-Rule of thumb: if you only ever need ONE of something (gameBoard, displayController), use a module.
-If you need multiples of something (players!), create them with factories.
-
-- Store the gameboard as an array inside of a Gameboard object.
-Functionalities:
-- Names
-- Replay button
-- Dumb AI function and vs player.
-*/
-
-//Function factory for the tiles. Initializes event listeners and such.
-//Note: Change this to a factory function since we need multiple (to be placed into array).
-//Using 
-
-
 
 const player = (markType, isCPU = false) => {
   let mark = _initializeMark(markType);
@@ -42,7 +23,6 @@ const player = (markType, isCPU = false) => {
 }
 
 const gameboardTile = () => {
-
   const createTile = () => {
     let tile = document.createElement("div");
     tile.classList.add("game-tile");
@@ -104,7 +84,7 @@ const gameboardTile = () => {
 
     game.cpuPlaying = false;
 
-    if (cpuMove){
+    if (cpuMove){ // cpu move finished, inform the user it's time for their move
       dialogController.sendMessage(responsePresets.p1move);
     }
 
@@ -162,6 +142,7 @@ const gameboard = (function() {
       crossdiag.push(i);
     }
     self.winningDiagonals.push(diag, crossdiag);
+    console.log(self.winningDiagonals);
   }
 
   const generateGameboard = (e = null) => {
@@ -212,9 +193,9 @@ const gameboard = (function() {
   }
 })();
 
-const options = (function(){
+const menu = (function(){
 
-  const _markActive = (e) => {
+  const _selectMarkType = (e) => {
     document.querySelector("#options-confirm").removeAttribute("disabled");
 
     e.currentTarget.parentNode.querySelectorAll("button").forEach(button => {
@@ -228,7 +209,7 @@ const options = (function(){
    */
   const _initializeHandlers = () => {
     document.querySelectorAll("#options-choices > button").forEach(button => {
-      button.addEventListener("click", _markActive);
+      button.addEventListener("click", _selectMarkType);
     });
 
     document.querySelector("#options-confirm").addEventListener("click", (e) => {
@@ -239,6 +220,9 @@ const options = (function(){
     document.querySelector("#grid-size-input").addEventListener("change",
         gameboard.generateGameboard);
 
+    document.querySelector("#continue").addEventListener("click",
+      game.startNewRound
+    )
   }
 
   const initialize = () => {
@@ -273,11 +257,7 @@ const game = (function(){
     game.player2 = player(otherMark, true);
     game.rounds = document.querySelector("#grid-size-input").value;
     
-    for (let i = 0; i < (gameboard.size * gameboard.size); i++) {
-      gameboard.gameboardState.push("-"); 
-    }
-
-    dialogController.sendMessage(responsePresets.p1move);
+    startNewRound();
   }
 
   /**
@@ -293,7 +273,9 @@ const game = (function(){
       }
       return available;
     }, []);
-    let move = Math.round(Math.random() * availableSpaces.length-1);
+    console.log(availableSpaces);
+    let move = Math.round(Math.random() * (availableSpaces.length-1));
+    console.log(move);
 
     return availableSpaces[move];
   };
@@ -303,9 +285,9 @@ const game = (function(){
    * played.
    */
   const checkIfWin = () => {
-    let horizontalWin;
-    let verticalWin;
-    let diagonalWin;
+    let horizontalWin = false;
+    let verticalWin = false;
+    let diagonalWin = false;
     let winner;
 
     // extract an array of indices for both x and o.
@@ -322,7 +304,7 @@ const game = (function(){
     console.log(JSON.stringify(markIndices));
 
     // TODO: logic that checks if you've won.
-  // 2. check all wins based on the given move.
+    // 2. check all wins based on the given move.
     // build a diagonal win state index array outside of loop
     // check first if diagonal's even possible.
     // example. 7
@@ -362,20 +344,26 @@ const game = (function(){
           } 
         }
 
-        diagonalWin = true;
-        for (let diagonalIndex of gameboard.winningDiagonals) {
-          if (markIndices[markType].indexOf(diagonalIndex) !== -1) {
-            diagonalWin = false;
+        for (let diagonalType of gameboard.winningDiagonals) {
+          let diagonalMatches = 0;
+          console.log(diagonalType);
+          for(let diagonalIndex of diagonalType) {
+            if (markIndices[markType].indexOf(diagonalIndex) !== -1) {
+              diagonalMatches++;
+            }
+            if (diagonalMatches === gameboard.size) {
+              diagonalWin = true;
+              winner = markType;
+              break;
+            }
+            
           }
-        }
-        if (diagonalWin){
-          winner = markType;
-          break;
         }
       }
     }
 
     if (horizontalWin | verticalWin | diagonalWin) {
+      console.log({horizontalWin, verticalWin, diagonalWin});
       if (winner === game.player1.markType.toLowerCase()) {
         dialogController.sendMessage(responsePresets.win);
         game.winner = game.player1;
@@ -392,11 +380,27 @@ const game = (function(){
     game.roundOver = true;
     game.roundsPlayed++;
     // TODO: Show pop-up menu button after round has been completed.
+    // TODO: Only start a new round when round counter < round
+    document.querySelector("#end-of-round-panel").classList.remove("disable-visibility");
   }
 
   const startNewRound = () => {
-    // TODO: Start a new round, given that the round counter < round
-    // Attach the functionality of this method to the 
+    document.querySelector("#end-of-round-panel").classList.add("disable-visibility");
+    
+    // Wipe out existing marks.
+    Views.gameView.querySelectorAll(".game-tile .mark").forEach(mark => {
+      mark.remove();
+    });
+
+    gameboard.gameboardState = [];
+    for (let i = 0; i < (gameboard.size * gameboard.size); i++) {
+      gameboard.gameboardState.push("-"); 
+    }
+
+    dialogController.sendMessage(responsePresets.p1move);
+
+    game.roundOver = false;
+    game.player1turn = true;
   }
 
   return {
@@ -410,6 +414,7 @@ const game = (function(){
     winner,
     endRound,
     roundOver,
+    startNewRound
   }
 })();
 
@@ -441,5 +446,5 @@ const Views = {
 
 
 gameboard.generateGameboard();
-options.initialize();
+menu.initialize();
 

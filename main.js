@@ -322,20 +322,16 @@ const game = (function(){
     console.log(JSON.stringify(markIndices));
 
     // TODO: logic that checks if you've won.
-    // 1. Is the length of the array less than {gameboard.size-1} elements? 
-    // If it's not, not enough moves have been made to grant a winner -- the game hasn't progressed long enough.
-    if (markIndices.x.length < gameboard.size-1 && markIndices.o.length < gameboard.size-1) {
-      return false;
-    }
-    // 2. check all wins based on the given move.
+  // 2. check all wins based on the given move.
     // build a diagonal win state index array outside of loop
     // check first if diagonal's even possible.
     // example. 7
     for (let markType in markIndices) {
       for (let index of markIndices[markType]) {
 
-        if (markIndices[markType].length !== 3) {
-          
+        // 1. Is the length of the given array less than {gameboard.size} elements? 
+        if (markIndices[markType].length < gameboard.size) {
+          continue;
         }
 
         let rowCoord = parseInt(index / gameboard.size);

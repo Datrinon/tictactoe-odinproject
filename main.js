@@ -55,7 +55,7 @@ const gameboardTile = () => {
   const _onTileClick = (e) => {
     let id = e.currentTarget.getAttribute("data-index");
 
-    if (game.gameRoundOver) {
+    if (game.roundOver) {
       return;
     } 
 
@@ -68,7 +68,7 @@ const gameboardTile = () => {
       _markTile(e);
     }
     // cpu response?
-    if(game.player2.isCPU) {
+    if(game.player2.isCPU && !game.roundOver) {
       dialogController.sendMessage(responsePresets.p2move);
       game.cpuPlaying = true;
       setTimeout(() => _markTile(null, true), 10); // TODO: When finished debugging, set Timeout to 500 + random(1000)
@@ -232,7 +232,7 @@ const options = (function(){
     });
 
     document.querySelector("#options-confirm").addEventListener("click", (e) => {
-      document.querySelector("#menu").classList.add("disable-visibility");
+      document.querySelector("#options").classList.add("disable-visibility");
       game.startGame();
     });
 
@@ -254,7 +254,7 @@ const game = (function(){
   let player2;
   let rounds;
   let _roundsPlayed;
-  let _roundOver;
+  let roundOver;
   let player1turn = true;
   let cpuPlaying = false;
   let winner;
@@ -376,7 +376,7 @@ const game = (function(){
     }
 
     if (horizontalWin | verticalWin | diagonalWin) {
-      if (winner === game.player1.markType) {
+      if (winner === game.player1.markType.toLowerCase()) {
         dialogController.sendMessage(responsePresets.win);
         game.winner = game.player1;
       } else {
@@ -389,13 +389,14 @@ const game = (function(){
   }
 
   const endRound = () => {
-    game._roundOver = true;
-    game._roundsPlayed++;
+    game.roundOver = true;
+    game.roundsPlayed++;
     // TODO: Show pop-up menu button after round has been completed.
   }
 
   const startNewRound = () => {
     // TODO: Start a new round, given that the round counter < round
+    // Attach the functionality of this method to the 
   }
 
   return {
@@ -408,6 +409,7 @@ const game = (function(){
     checkIfWin,
     winner,
     endRound,
+    roundOver,
   }
 })();
 

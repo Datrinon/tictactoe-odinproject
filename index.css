@@ -61,6 +61,24 @@ body {
   visibility: hidden;
 }
 
-.game-tile[data-index=3]{
+#scoreboard {
+  display: grid;
+  grid-template-areas: 
+  "rounds rounds"
+  "player1 player2"
+  "player1 player2";
+  width: 50%;
+  margin: 0 auto;
+}
 
+#scoreboard #rounds-caption {
+  grid-area: rounds;
+}
+
+#scoreboard #player-1-section {
+  grid-area: player1;
+}
+
+#scoreboard #player-2-section {
+  grid-area: player2;
 }

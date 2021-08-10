@@ -1,6 +1,7 @@
 'use strict'
 
-const player = (markType, isCPU = false) => {
+const player = (name, markType, isPlayer1=false, isCPU = false) => {
+  let score = 0;
   let mark = _initializeMark(markType);
 
   function _initializeMark(markType="O") {
@@ -16,8 +17,11 @@ const player = (markType, isCPU = false) => {
   }
 
   return {
+    name,
+    score,
     markType,
     mark,
+    isPlayer1,
     isCPU
   }
 }
@@ -254,10 +258,12 @@ const game = (function(){
     let chosenMark = document.querySelector("#options-choices > .selection-active").textContent;
     let otherMark = document.querySelector("#options-choices > button:not(.selection-active)").textContent;
 
-    game.player1 = player(chosenMark, false);
-    game.player2 = player(otherMark, true);
-    game.rounds = document.querySelector("#grid-size-input").value;
+    game.player1 = player("Player 1", chosenMark, true, false);
+    game.player2 = player("CPU", otherMark, false, true);
+    game.rounds = +document.querySelector("#grid-size-input").value;
     
+    scoreboardController.initialize(game.player1, game.player2);
+
     startNewRound();
   }
 
@@ -367,11 +373,14 @@ const game = (function(){
       console.log({horizontalWin, verticalWin, diagonalWin});
       if (winner === game.player1.markType.toLowerCase()) {
         dialogController.sendMessage(responsePresets.win);
+        game.player1.score++;
         game.winner = game.player1;
       } else {
         dialogController.sendMessage(responsePresets.lose);
+        game.player2.score++;
         game.winner = game.player2;
       }
+      scoreboardController.updateScore(game.winner);
     }
 
     return horizontalWin | verticalWin | diagonalWin;
@@ -387,7 +396,6 @@ const game = (function(){
   const endRound = () => {
     game.roundOver = true;
     game.roundsPlayed++;
-    // TODO: Show pop-up menu button after round has been completed.
     // TODO: Only start a new round when round counter < round
     document.querySelector("#end-of-round-panel").classList.remove("disable-visibility");
   }
@@ -436,6 +444,40 @@ const dialogController = (() => {
 
   return {
     sendMessage,
+  }
+})();
+
+const scoreboardController = (() => {
+  
+  function initialize(player1, player2) {
+    document.querySelector("#rounds-caption > #rounds").textContent = game.rounds;
+
+    let players = [player1, player2];
+    for (let i = 0; i < 2; i++) {
+      let playerSection = document.querySelector(`#player-${i+1}-section`);
+      playerSection.querySelector(".scoreboard-name").textContent = players[i].name;
+      playerSection.querySelector(`#player-${i+1}-score`).textContent = players[i].score; 
+    }
+  }
+
+  /**
+   * Updates score on the scoreboard.
+   * @param {Player} player - The player to update the score for.
+   */
+  function updateScore(player) {
+    let playerId;
+    if (player.isPlayer1) {
+      playerId = "player-1";
+    } else {
+      playerId = "player-2";
+    }
+
+    document.querySelector(`#${playerId}-score`).textContent = player.score;
+  }
+
+  return {
+    initialize,
+    updateScore
   }
 })();
 

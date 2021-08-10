@@ -54,6 +54,11 @@ const gameboardTile = () => {
 
   const _onTileClick = (e) => {
     let id = e.currentTarget.getAttribute("data-index");
+
+    if (game.gameRoundOver) {
+      return;
+    } 
+
     if (gameboard.gameboardState[id] !== "-") {
       dialogController.sendMessage(responsePresets.played);
       return;
@@ -66,7 +71,7 @@ const gameboardTile = () => {
     if(game.player2.isCPU) {
       dialogController.sendMessage(responsePresets.p2move);
       game.cpuPlaying = true;
-      setTimeout(() => _markTile(null, true), 10);
+      setTimeout(() => _markTile(null, true), 10); // TODO: When finished debugging, set Timeout to 500 + random(1000)
     }
   };
 
@@ -103,7 +108,9 @@ const gameboardTile = () => {
       dialogController.sendMessage(responsePresets.p1move);
     }
 
-    game.checkIfWin();
+    if (game.checkIfWin()) {
+      game.endRound();
+    }
   }
 
   return {
@@ -165,7 +172,7 @@ const gameboard = (function() {
       size = +e.currentTarget.value;
     }
 
-    gameboardState = [];
+    gameboard.gameboardState = [];
 
     _determineWinStates();
 
@@ -189,10 +196,7 @@ const gameboard = (function() {
       let tile = gameboardTile().createTile();
       tile.setAttribute("data-index", i); 
 
-      gameboardState.push("-");
-
       gameboard.appendChild(tile);
-
     }
 
     container.appendChild(gameboard);
@@ -249,8 +253,11 @@ const game = (function(){
   let player1;
   let player2;
   let rounds;
+  let _roundsPlayed;
+  let _roundOver;
   let player1turn = true;
   let cpuPlaying = false;
+  let winner;
 
   /**
    * Starts the game by:
@@ -265,6 +272,10 @@ const game = (function(){
     game.player1 = player(chosenMark, false);
     game.player2 = player(otherMark, true);
     game.rounds = document.querySelector("#grid-size-input").value;
+    
+    for (let i = 0; i < (gameboard.size * gameboard.size); i++) {
+      gameboard.gameboardState.push("-"); 
+    }
 
     dialogController.sendMessage(responsePresets.p1move);
   }
@@ -273,7 +284,6 @@ const game = (function(){
    * Performs a CPU move by returning their decision as a number corresponding
    * to an available space on the grid.
    * 
-   * @returns 
    */
   const performCPUMove = () => {
     // select a random number. Use reduce to find out the available spaces.
@@ -296,6 +306,7 @@ const game = (function(){
     let horizontalWin;
     let verticalWin;
     let diagonalWin;
+    let winner;
 
     // extract an array of indices for both x and o.
     let markIndices = gameboard.gameboardState.reduce((indices, elem, index) => {
@@ -311,59 +322,84 @@ const game = (function(){
     console.log(JSON.stringify(markIndices));
 
     // TODO: logic that checks if you've won.
-    // 1. Is the length of the array at least 4 elements? 
-    // If it's not, not enough moves have been made to grant a winner.
-    if (indices.x.length < 4 && indices.o.length < 4) {
+    // 1. Is the length of the array less than {gameboard.size-1} elements? 
+    // If it's not, not enough moves have been made to grant a winner -- the game hasn't progressed long enough.
+    if (markIndices.x.length < gameboard.size-1 && markIndices.o.length < gameboard.size-1) {
       return false;
     }
     // 2. check all wins based on the given move.
     // build a diagonal win state index array outside of loop
     // check first if diagonal's even possible.
     // example. 7
-    let diagWinState = [];
-    let crossDiagWinState = [];
-    for (let i = 0; i < gameboard.size; i++) {
-      diagWinState.push(i + (gameboard.size * i));
-      crossDiagWinState.push((gameboard.size * (i+1)) - (i+1))
-    }
-
     for (let markType in markIndices) {
-      let row;
-      let column;
-      let matches;
-      for (let index of markIndices[markType]){
-        // for a given index
-        // build a horizontal win state index array
-        row = ~~(index / gameboard.size);
-        matches = 0;
-        for (let i = 0; i < gameboard.size; i++) {
-          if (markIndices[markType].indexOf((row * gameboard.size) + i) !== -1) {
-            matches++;
-            if (matches === gameboard.size){
-              console.log("horizontal win attained");
-              horizontalWin = true;
-              break;
-            }
-          }
+      for (let index of markIndices[markType]) {
+
+        if (markIndices[markType].length !== 3) {
+          
         }
 
-        column = index % gameboard.size;
-        matches = 0;
-        // build a vertical win state index array
-        for (let i = 0; i < gameboard.size; i++) {
-          if (markIndices[markType].indexOf(column + (column * gameboard.size) !== -1)) {
-            matches++;
-            if (matches === gameboard.size){
-              console.log("vertical win attained");
-              verticalWin = true;
-              break;
-            }
+        let rowCoord = parseInt(index / gameboard.size);
+        let columnCoord = index % gameboard.size; 
+        let rowMatches = 0;
+
+        for (let winIndex of gameboard.winningRows[rowCoord]) {
+          if (markIndices[markType].indexOf(winIndex) !== -1) {
+            rowMatches++;
           }
-        }        
+          if (rowMatches === gameboard.size) {
+            horizontalWin = true;
+            winner = markType;
+            break;
+          } 
+        }
+
+        let columnMatches = 0;
+
+        for (let winIndex of gameboard.winningColumns[columnCoord]) {
+          if (markIndices[markType].indexOf(winIndex) !== -1) {
+            columnMatches++;
+          }
+          if (columnMatches === gameboard.size) {
+            verticalWin = true;
+            winner = markType;
+            break;
+          } 
+        }
+
+        diagonalWin = true;
+        for (let diagonalIndex of gameboard.winningDiagonals) {
+          if (markIndices[markType].indexOf(diagonalIndex) !== -1) {
+            diagonalWin = false;
+          }
+        }
+        if (diagonalWin){
+          winner = markType;
+          break;
+        }
       }
     }
 
-    // return horizontalWin | verticalWin | diagonalWin;
+    if (horizontalWin | verticalWin | diagonalWin) {
+      if (winner === game.player1.markType) {
+        dialogController.sendMessage(responsePresets.win);
+        game.winner = game.player1;
+      } else {
+        dialogController.sendMessage(responsePresets.lose);
+        game.winner = game.player2;
+      }
+    }
+
+    return horizontalWin | verticalWin | diagonalWin;
+  }
+
+  const endRound = () => {
+    game._roundOver = true;
+    game._roundsPlayed++;
+    // TODO: Show pop-up menu button after round has been completed.
+  }
+
+  const startNewRound = () => {
+    // TODO: Start a new round, given that the round counter < round
   }
 
   return {
@@ -374,6 +410,8 @@ const game = (function(){
     rounds,
     performCPUMove,
     checkIfWin,
+    winner,
+    endRound,
   }
 })();
 

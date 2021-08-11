@@ -213,7 +213,7 @@ const menu = (function(){
    * Initializes various views with handlers to respond to user interaction.
    */
   const _initializeHandlers = () => {
-    document.querySelectorAll("#options-choices > button").forEach(button => {
+    document.querySelectorAll("#options-choices .mark-selection").forEach(button => {
       button.addEventListener("click", _selectMarkType);
     });
 

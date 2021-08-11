@@ -281,7 +281,7 @@ const game = (function(){
     let chosenMark = document.querySelector("#options-choices .selection-active").textContent;
     let otherMark = document.querySelector("#options-choices button:not(.selection-active)").textContent;
 
-    game.player1 = player("Player 1", chosenMark, true, false);
+    game.player1 = player("Player", chosenMark, true, false);
     game.player2 = player("CPU", otherMark, false, true);
     game.rounds = +document.querySelector("#num-rounds-input").value;
     game._roundsPlayed = 0;

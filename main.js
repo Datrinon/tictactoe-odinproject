@@ -218,16 +218,11 @@ const menu = (function(){
     });
 
     document.querySelector("#options-confirm").addEventListener("click", (e) => {
-      document.querySelector("#options").classList.add("disable-visibility");
       game.startGame();
     });
 
     document.querySelector("#grid-size-input").addEventListener("change",
         gameboard.generateGameboard);
-
-    document.querySelector("#continue").addEventListener("click",
-      game.startNewRound
-    )
   }
 
   const initialize = () => {
@@ -249,6 +244,35 @@ const game = (function(){
   let winner;
 
   /**
+   * Ends the game.
+   * @param {bool} replay - Did the user choose to hit replay? If so, then 
+   * persists the player settings, round settings, and grid size. If not (default),
+   * return them to the main menu.
+   */
+  const resetGame = (replay=false) => {
+    // TODO. Fill out this shit. and then do the CSS.
+    game._roundsPlayed = 0;
+    game.roundOver = false;
+    game.player1turn = true;
+    game.winner = null;
+    if (!replay) {
+      game.player1 = null;
+      game.player2 = null;
+      game.rounds = 0;
+    } else {
+      // keep rounds the same.
+      game.player1.score = 0;
+      game.player2.score = 0;
+      scoreboardController.updateScore(game.player1);
+      scoreboardController.updateScore(game.player2);
+    }
+
+
+
+  }
+
+
+  /**
    * Starts the game by:
    * - Creating players
    * - Setting the rounds
@@ -260,17 +284,15 @@ const game = (function(){
 
     game.player1 = player("Player 1", chosenMark, true, false);
     game.player2 = player("CPU", otherMark, false, true);
-    game.rounds = +document.querySelector("#grid-size-input").value;
-    
+    game.rounds = +document.querySelector("#num-rounds-input").value;
+    game._roundsPlayed = 0;
+
     scoreboardController.initialize(game.player1, game.player2);
     
-    // after the user begins a game, do not remove visibility.
-    // in case the user wants to play again.
-    for (let view in Views) {
-      if (Views[view].classList.contains("disable-display")){
-        Views[view].classList.remove("disable-display");
-      }
-    }
+    document.querySelector("#options").classList.add("disable-display");
+    Views.gameView.classList.remove("disable-display");
+    Views.scoreboardView.classList.remove("disable-display");
+
 
     startNewRound();
   }
@@ -403,13 +425,58 @@ const game = (function(){
 
   const endRound = () => {
     game.roundOver = true;
-    game.roundsPlayed++;
+    game._roundsPlayed++;
     // TODO: Only start a new round when round counter < round
-    document.querySelector("#end-of-round-panel").classList.remove("disable-visibility");
+    let endRoundPanel = document.querySelector("#end-of-round-panel");
+    endRoundPanel.classList.remove("disable-display");
+    
+    if (game._roundsPlayed >= game.rounds){
+      while(endRoundPanel.firstChild) {
+        endRoundPanel.removeChild(endRoundPanel.firstChild);
+      }
+
+      let gameOverMsg = document.createElement("p");
+      gameOverMsg.textContent = "Game over!";
+      
+      let replayButton = document.createElement("button");
+      replayButton.textContent = "Replay";
+      replayButton.addEventListener("click", () => {
+        resetGame(true);
+        startNewRound();
+      });
+
+
+      let mainMenuButton = document.createElement("button");
+      mainMenuButton.textContent = "Return to Main Menu";
+      mainMenuButton.addEventListener("click", (e) => {
+        resetGame(false);
+        displayMainMenu(e);
+      });
+
+      endRoundPanel.append(gameOverMsg, replayButton, mainMenuButton);
+    } else {
+      let continueButton = document.createElement("button");
+      continueButton.id = "Next";
+      continueButton.addEventListener("click", (e) => {
+        startNewRound();
+      });
+    }
+  }
+
+  const displayMainMenu = (e) => {
+    // display the previous menu
+    dialogController.sendMessage(responsePresets.menu);
+    e.currentTarget.parentNode.classList.add("disable-display");
+    // show the previous menu
+    Views.menuView.classList.remove("disable-display");
+    Views.optionsView.classList.remove("disable-display");
+    // disable view of gameboard
+    Views.gameView.classList.add("disable-display");
+    Views.scoreboardView.classList.add("disable-display");
   }
 
   const startNewRound = () => {
-    document.querySelector("#end-of-round-panel").classList.add("disable-visibility");
+    document.querySelector("#end-of-round-panel").classList.add("disable-display");
     
     // Wipe out existing marks.
     Views.gameView.querySelectorAll(".game-tile .mark").forEach(mark => {
@@ -501,6 +568,8 @@ const responsePresets = {
 }
 
 const Views = {
+  optionsView : document.querySelector("#options"),
+  menuView : document.querySelector("#menu"),
   gameView : document.querySelector("#game"),
   scoreboardView : document.querySelector("#scoreboard"),
 }

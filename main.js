@@ -217,9 +217,8 @@ const menu = (function(){
       button.addEventListener("click", _selectMarkType);
     });
 
-    document.querySelector("#options-confirm").addEventListener("click", (e) => {
-      game.startGame();
-    });
+    document.querySelector("#options-confirm").addEventListener("click", game.startGame);
+    
 
     document.querySelector("#grid-size-input").addEventListener("change",
         gameboard.generateGameboard);
@@ -279,8 +278,8 @@ const game = (function(){
    */
   const startGame = (e) => {    
 
-    let chosenMark = document.querySelector("#options-choices > .selection-active").textContent;
-    let otherMark = document.querySelector("#options-choices > button:not(.selection-active)").textContent;
+    let chosenMark = document.querySelector("#options-choices .selection-active").textContent;
+    let otherMark = document.querySelector("#options-choices button:not(.selection-active)").textContent;
 
     game.player1 = player("Player 1", chosenMark, true, false);
     game.player2 = player("CPU", otherMark, false, true);
@@ -289,7 +288,8 @@ const game = (function(){
 
     scoreboardController.initialize(game.player1, game.player2);
     
-    document.querySelector("#options").classList.add("disable-display");
+    Views.optionsView.classList.add("disable-display");
+    Views.menuView.classList.add("disable-display");
     Views.gameView.classList.remove("disable-display");
     Views.scoreboardView.classList.remove("disable-display");
 

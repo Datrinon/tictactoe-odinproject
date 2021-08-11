@@ -435,8 +435,19 @@ const game = (function(){
         endRoundPanel.removeChild(endRoundPanel.firstChild);
       }
 
+      dialogController.sendMessage(blank);
+      let gameOverMsg = "";
+
+      if (game.player1.score > game.player2.score) {
+        gameOverMsg = `${game.player1.name} wins!`
+      } else if (game.player1.score === game.player2.score) {
+        gameOverMsg = "It's a tie!"
+      } else {
+        gameOverMsg = `${game.player2.name} wins!`
+      }
+
       let gameOverMsg = document.createElement("p");
-      gameOverMsg.textContent = "Game over!";
+      gameOverMsg.textContent = gameOverMsg;
       
       let replayButton = document.createElement("button");
       replayButton.textContent = "Replay";
@@ -565,6 +576,7 @@ const responsePresets = {
   p2move: "Player 2's move",
   played: "This square has already been marked! Pick another.",
   tie: "It's a tie! Nobody wins.",
+  blank: "",
 }
 
 const Views = {

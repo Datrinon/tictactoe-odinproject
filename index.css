@@ -72,7 +72,7 @@ body {
   font-weight   : bolder;
   font-family   : "Dela Gothic One";
   text-transform: uppercase;
-  /* text-shadow: 1px 1px 2px #8B5D33; */
+  text-shadow: 1px 1px 2px #8B5D33;
   color         : rgb(86, 77, 40);
   align-self    : center;
   border-right  : 1px solid black;
@@ -192,7 +192,7 @@ body {
 #gameboard {
   display         : grid;
   background-color: black;
-  border          : 5px solid rgb(35, 68, 84);
+  border          : 4px solid rgb(221, 194, 43);
   gap             : 2px 2px;
   justify-items   : center;
   align-items     : center;
@@ -200,12 +200,13 @@ body {
   width           : 50%;
   max-width       : 600px;
   border-radius: 5px;
+  box-shadow      : 3px 7px 1px rgba(0, 0, 0, 0.19);
 }
 
 .game-tile {
   width           : 100%;
   height          : 100px;
-  background-color: rgb(217, 252, 251);
+  background-color: rgba(255, 240, 208, 0.994);
 }
 
 .game-tile:hover {
@@ -248,7 +249,7 @@ body {
   font-size: 1.5em;
   color: white;
   text-shadow: 1px 1px 1px rgb(60, 60, 60);
-  border: 1px solid black;
+  /* border: 1px solid black; */
 }
 
 #scoreboard #rounds-caption {
@@ -283,10 +284,7 @@ body {
   position: relative;
   color: #FF665A;
 }
-* {
 
-  color: #f0d1cf;
-}
 
 .mark.fa-circle {
   position: relative;

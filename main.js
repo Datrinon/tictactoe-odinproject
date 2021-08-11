@@ -435,19 +435,19 @@ const game = (function(){
         endRoundPanel.removeChild(endRoundPanel.firstChild);
       }
 
-      dialogController.sendMessage(blank);
-      let gameOverMsg = "";
+      dialogController.sendMessage(responsePresets.blank);
+      let outcome = "";
 
       if (game.player1.score > game.player2.score) {
-        gameOverMsg = `${game.player1.name} wins!`
+        outcome = `${game.player1.name} wins!`
       } else if (game.player1.score === game.player2.score) {
-        gameOverMsg = "It's a tie!"
+        outcome = "It's a tie!"
       } else {
-        gameOverMsg = `${game.player2.name} wins!`
+        outcome = `${game.player2.name} wins!`
       }
 
       let gameOverMsg = document.createElement("p");
-      gameOverMsg.textContent = gameOverMsg;
+      gameOverMsg.textContent = outcome;
       
       let replayButton = document.createElement("button");
       replayButton.textContent = "Replay";
@@ -476,7 +476,7 @@ const game = (function(){
 
   const displayMainMenu = (e) => {
     // display the previous menu
-    dialogController.sendMessage(responsePresets.menu);
+    dialogController.sendMessage(responsePresets.blank);
     e.currentTarget.parentNode.classList.add("disable-display");
     // show the previous menu
     Views.menuView.classList.remove("disable-display");

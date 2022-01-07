@@ -1,18 +1,18 @@
 'use strict'
 
-const player = (name, markType, isPlayer1=false, isCPU = false) => {
+const player = (name, markType, isPlayer1 = false, isCPU = false) => {
   let score = 0;
   let mark = _initializeMark(markType);
 
-  function _initializeMark(markType="O") {
+  function _initializeMark(markType = "O") {
     let mark = document.createElement("i");
     mark.classList.add("mark")
-    if(markType === "O") {
-      mark.classList.add("far","fa-circle");
+    if (markType === "O") {
+      mark.classList.add("far", "fa-circle");
     } else {
-      mark.classList.add("fas","fa-times");
+      mark.classList.add("fas", "fa-times");
     }
-    
+
     return mark;
   }
 
@@ -41,9 +41,10 @@ const gameboardTile = () => {
 
     if (game.roundOver) {
       return;
-    } 
+    }
 
     if (gameboard.gameboardState[id] !== "-") {
+      debugger;
       dialogController.sendMessage(responsePresets.played);
       return;
     }
@@ -52,7 +53,7 @@ const gameboardTile = () => {
       _markTile(e);
     }
     // cpu response?
-    if(game.player2.isCPU && !game.roundOver) {
+    if (game.player2.isCPU && !game.roundOver) {
       dialogController.sendMessage(responsePresets.p2move);
       game.cpuPlaying = true;
       setTimeout(() => _markTile(null, true), 10); // TODO: When finished debugging, set Timeout to 500 + random(1000)
@@ -88,14 +89,14 @@ const gameboardTile = () => {
 
     game.cpuPlaying = false;
 
-    if (cpuMove){ // cpu move finished, inform the user it's time for their move
+    if (cpuMove) { // cpu move finished, inform the user it's time for their move
       dialogController.sendMessage(responsePresets.p1move);
     }
 
     if (game.checkIfWin() || game.checkIfAllSpacesFilled()) {
       game.endRound();
     }
-    
+
   }
 
   return {
@@ -106,8 +107,8 @@ const gameboardTile = () => {
 // Generate a view of the gameboard. Don't use global code.
 // Use a module to display the gameboard.
 // and try to not use main() this time.
-const gameboard = (function() {
-  
+const gameboard = (function () {
+
   let size = 3;
   let gameboardState = [];
   let winningRows = [];
@@ -119,11 +120,11 @@ const gameboard = (function() {
 
     self.winningRows = [];
     self.winningColumns = [];
-    self.winningDiagonals = []; 
-    
-    for (let i = 0; i < size*size; i+=size) {
+    self.winningDiagonals = [];
+
+    for (let i = 0; i < size * size; i += size) {
       let row = [];
-      for (let j=i; j < i + size; j++) {
+      for (let j = i; j < i + size; j++) {
         row.push(j);
       }
       self.winningRows.push(row);
@@ -138,12 +139,12 @@ const gameboard = (function() {
     }
 
     let diag = [];
-    for (let i = 0; i < size*size; i+= size+1) {
+    for (let i = 0; i < size * size; i += size + 1) {
       diag.push(i);
     }
 
     let crossdiag = [];
-    for (let i = size-1; i <= (size * size) - size ; i += size-1) {
+    for (let i = size - 1; i <= (size * size) - size; i += size - 1) {
       crossdiag.push(i);
     }
     self.winningDiagonals.push(diag, crossdiag);
@@ -156,6 +157,7 @@ const gameboard = (function() {
     }
     if (e !== null) {
       size = +e.currentTarget.value;
+      gameboard.size = size;
     }
 
     gameboard.gameboardState = [];
@@ -163,6 +165,7 @@ const gameboard = (function() {
     _determineWinStates();
 
     _displayGameboardView(Views.gameView);
+
   };
 
   /**
@@ -172,15 +175,15 @@ const gameboard = (function() {
   const _displayGameboardView = (container) => {
 
     let gameboard = document.createElement("div");
-    
+
     gameboard.id = "gameboard";
     gameboard.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
     gameboard.style.gridTemplateRows = `repeat(${size}, 1fr)`;
-    
-    for (let i = 0; i < (size * size); i++) {      
+
+    for (let i = 0; i < (size * size); i++) {
       // use differential inheritance to preserve memory rather than copying methods.
       let tile = gameboardTile().createTile();
-      tile.setAttribute("data-index", i); 
+      tile.setAttribute("data-index", i);
 
       gameboard.appendChild(tile);
     }
@@ -198,7 +201,7 @@ const gameboard = (function() {
   }
 })();
 
-const menu = (function(){
+const menu = (function () {
 
   const _selectMarkType = (e) => {
     document.querySelector("#options-confirm").removeAttribute("disabled");
@@ -218,25 +221,25 @@ const menu = (function(){
     });
 
     document.querySelector("#options-confirm").addEventListener("click", game.startGame);
-    
+
 
     document.querySelector("#grid-size-input").addEventListener("change",
-        gameboard.generateGameboard);
+      gameboard.generateGameboard);
   }
 
   const initialize = () => {
     _initializeHandlers();
   }
 
-  return {initialize};
+  return { initialize };
 })();
 
-const game = (function(){
+const game = (function () {
   // main section
   let player1;
   let player2;
   let rounds;
-  let _roundsPlayed;
+  let roundsPlayed;
   let roundOver;
   let player1turn = true;
   let cpuPlaying = false;
@@ -248,9 +251,8 @@ const game = (function(){
    * persists the player settings, round settings, and grid size. If not (default),
    * return them to the main menu.
    */
-  const resetGame = (replay=false) => {
-    // TODO. Fill out this shit. and then do the CSS.
-    game._roundsPlayed = 0;
+  const resetGame = (replay = false) => {
+    game.roundsPlayed = 0;
     game.roundOver = false;
     game.player1turn = true;
     game.winner = null;
@@ -265,9 +267,29 @@ const game = (function(){
       scoreboardController.updateScore(game.player1);
       scoreboardController.updateScore(game.player2);
     }
+  }
+
+  function renderWinScreenContents(outcome, endRoundPanel) {
+    dialogController.sendMessage(responsePresets.blank);
+    let gameOverMsg = document.createElement("p");
+    gameOverMsg.textContent = outcome;
+
+    let replayButton = document.createElement("button");
+    replayButton.textContent = "Replay";
+    replayButton.addEventListener("click", () => {
+      resetGame(true);
+      startNewRound();
+    });
 
 
+    let mainMenuButton = document.createElement("button");
+    mainMenuButton.textContent = "Return to Main Menu";
+    mainMenuButton.addEventListener("click", (e) => {
+      resetGame(false);
+      displayMainMenu(e);
+    });
 
+    endRoundPanel.append(gameOverMsg, replayButton, mainMenuButton);
   }
 
 
@@ -276,7 +298,7 @@ const game = (function(){
    * - Creating players
    * - Setting the rounds
    */
-  const startGame = (e) => {    
+  const startGame = (e) => {
 
     let chosenMark = document.querySelector("#options-choices .selection-active").textContent;
     let otherMark = document.querySelector("#options-choices button:not(.selection-active)").textContent;
@@ -284,10 +306,10 @@ const game = (function(){
     game.player1 = player("Player", chosenMark, true, false);
     game.player2 = player("CPU", otherMark, false, true);
     game.rounds = +document.querySelector("#num-rounds-input").value;
-    game._roundsPlayed = 0;
+    game.roundsPlayed = 0;
 
-    scoreboardController.initialize(game.player1, game.player2);
     
+    scoreboardController.initialize(game.player1, game.player2);
     Views.optionsView.classList.add("disable-display");
     Views.menuView.classList.add("disable-display");
     Views.gameView.classList.remove("disable-display");
@@ -311,7 +333,7 @@ const game = (function(){
       return available;
     }, []);
     console.log(availableSpaces);
-    let move = Math.round(Math.random() * (availableSpaces.length-1));
+    let move = Math.round(Math.random() * (availableSpaces.length - 1));
     console.log(move);
 
     return availableSpaces[move];
@@ -329,14 +351,14 @@ const game = (function(){
 
     // extract an array of indices for both x and o.
     let markIndices = gameboard.gameboardState.reduce((indices, elem, index) => {
-      if(elem === "X") {
+      if (elem === "X") {
         indices.x.push(index);
       } else if (elem === "O") {
         indices.o.push(index);
       }
 
       return indices;
-    }, {x: [], o: []});
+    }, { x: [], o: [] });
 
     console.log(JSON.stringify(markIndices));
 
@@ -354,7 +376,7 @@ const game = (function(){
         }
 
         let rowCoord = parseInt(index / gameboard.size);
-        let columnCoord = index % gameboard.size; 
+        let columnCoord = index % gameboard.size;
         let rowMatches = 0;
 
         for (let winIndex of gameboard.winningRows[rowCoord]) {
@@ -365,7 +387,7 @@ const game = (function(){
             horizontalWin = true;
             winner = markType;
             break;
-          } 
+          }
         }
 
         let columnMatches = 0;
@@ -378,13 +400,13 @@ const game = (function(){
             verticalWin = true;
             winner = markType;
             break;
-          } 
+          }
         }
 
         for (let diagonalType of gameboard.winningDiagonals) {
           let diagonalMatches = 0;
           // console.log(diagonalType);
-          for(let diagonalIndex of diagonalType) {
+          for (let diagonalIndex of diagonalType) {
             if (markIndices[markType].indexOf(diagonalIndex) !== -1) {
               diagonalMatches++;
             }
@@ -393,14 +415,14 @@ const game = (function(){
               winner = markType;
               break;
             }
-            
+
           }
         }
       }
     }
 
     if (horizontalWin | verticalWin | diagonalWin) {
-      console.log({horizontalWin, verticalWin, diagonalWin});
+      console.log({ horizontalWin, verticalWin, diagonalWin });
       if (winner === game.player1.markType.toLowerCase()) {
         dialogController.sendMessage(responsePresets.win);
         game.player1.score++;
@@ -425,18 +447,28 @@ const game = (function(){
 
   const endRound = () => {
     game.roundOver = true;
-    game._roundsPlayed++;
-    // TODO: Only start a new round when round counter < round
+    game.roundsPlayed++;
     let endRoundPanel = document.querySelector("#end-of-round-panel");
     endRoundPanel.classList.remove("disable-display");
-    
-    if (game._roundsPlayed >= game.rounds){
-      while(endRoundPanel.firstChild) {
-        endRoundPanel.removeChild(endRoundPanel.firstChild);
-      }
+    // remove all children from endRoundPanel.
+    while (endRoundPanel.firstChild) {
+      endRoundPanel.removeChild(endRoundPanel.firstChild);
+    }
 
-      dialogController.sendMessage(responsePresets.blank);
-      let outcome = "";
+    let outcome;
+
+
+    if (game.rounds > 2 &&
+      game.player1.score >= (Math.floor(game.rounds / 2) + 1)) {
+      outcome = `${game.player1.name} wins!`;
+      renderWinScreenContents(outcome, endRoundPanel);
+
+    } else if (game.rounds > 2 &&
+      (game.player2.score >= (Math.floor(game.rounds / 2) + 1))) {
+      outcome = `${game.player2.name} wins!`
+      renderWinScreenContents(outcome, endRoundPanel);
+
+    } else if (game.roundsPlayed >= game.rounds) {
 
       if (game.player1.score > game.player2.score) {
         outcome = `${game.player1.name} wins!`
@@ -446,31 +478,17 @@ const game = (function(){
         outcome = `${game.player2.name} wins!`
       }
 
-      let gameOverMsg = document.createElement("p");
-      gameOverMsg.textContent = outcome;
-      
-      let replayButton = document.createElement("button");
-      replayButton.textContent = "Replay";
-      replayButton.addEventListener("click", () => {
-        resetGame(true);
-        startNewRound();
-      });
-
-
-      let mainMenuButton = document.createElement("button");
-      mainMenuButton.textContent = "Return to Main Menu";
-      mainMenuButton.addEventListener("click", (e) => {
-        resetGame(false);
-        displayMainMenu(e);
-      });
-
-      endRoundPanel.append(gameOverMsg, replayButton, mainMenuButton);
+      renderWinScreenContents(outcome, endRoundPanel);
     } else {
-      let continueButton = document.createElement("button");
+      const continueButton = document.createElement("button");
       continueButton.id = "Next";
+      continueButton.textContent = "Next Round";
+
       continueButton.addEventListener("click", (e) => {
         startNewRound();
-      });
+      }, { once: true });
+
+      endRoundPanel.append(continueButton);
     }
   }
 
@@ -488,7 +506,7 @@ const game = (function(){
 
   const startNewRound = () => {
     document.querySelector("#end-of-round-panel").classList.add("disable-display");
-    
+
     // Wipe out existing marks.
     Views.gameView.querySelectorAll(".game-tile .mark").forEach(mark => {
       mark.remove();
@@ -496,7 +514,7 @@ const game = (function(){
 
     gameboard.gameboardState = [];
     for (let i = 0; i < (gameboard.size * gameboard.size); i++) {
-      gameboard.gameboardState.push("-"); 
+      gameboard.gameboardState.push("-");
     }
 
     dialogController.sendMessage(responsePresets.p1move);
@@ -519,12 +537,14 @@ const game = (function(){
     startNewRound,
     checkIfAllSpacesFilled,
   }
+
+
 })();
 
 
 const dialogController = (() => {
-  
-  function sendMessage(msg){
+
+  function sendMessage(msg) {
     document.querySelector("#dialog").textContent = msg;
   }
 
@@ -534,15 +554,15 @@ const dialogController = (() => {
 })();
 
 const scoreboardController = (() => {
-  
+
   function initialize(player1, player2) {
     document.querySelector("#rounds-caption > #rounds").textContent = game.rounds;
 
     let players = [player1, player2];
     for (let i = 0; i < 2; i++) {
-      let playerSection = document.querySelector(`#player-${i+1}-section`);
+      let playerSection = document.querySelector(`#player-${i + 1}-section`);
       playerSection.querySelector(".scoreboard-name").textContent = players[i].name;
-      playerSection.querySelector(`#player-${i+1}-score`).textContent = players[i].score; 
+      playerSection.querySelector(`#player-${i + 1}-score`).textContent = players[i].score;
     }
   }
 
@@ -580,10 +600,10 @@ const responsePresets = {
 }
 
 const Views = {
-  optionsView : document.querySelector("#options"),
-  menuView : document.querySelector("#menu"),
-  gameView : document.querySelector("#game"),
-  scoreboardView : document.querySelector("#scoreboard"),
+  optionsView: document.querySelector("#options"),
+  menuView: document.querySelector("#menu"),
+  gameView: document.querySelector("#game"),
+  scoreboardView: document.querySelector("#scoreboard"),
 }
 
 
